@@ -6,19 +6,9 @@ library(tm)
 library(data.table)
 
 #Read the data
-#txtdata <- read.csv(file = "panel_info.csv",fileEncoding = "utf8",quote = F)
-read_simple_user_info_w_nulls <- function(inFile){
-  
-  r = readBin(inFile, raw(), file.info(inFile)$size)
-  r[r==as.raw(0)] = as.raw(0x20)
-  tfile = tempfile(fileext=".txt")
-  writeBin(r, tfile)
-  rm(r)
-  inFile = tfile
-  
-  return(read_simple_user_info(inFile))
-}
-txtdata <- txtdata$text
+txtdata <- read.csv(file = "[your csv filename].csv")
+
+txtdata <- txtdata$text #Or whatever the header of the column containing the text is
 
 txtcorpus <- Corpus(VectorSource(txtdata))
 #txtcorpus
@@ -35,14 +25,11 @@ txtdtm <- DocumentTermMatrix(txtcorpus)
 txtdtm
 
 #Tokenize data
-#txtdata <- tibble(line = 1:35434, text = txtdata)
 tidytxtdata<- tidy(txtdtm)
-tidytxtdata <- txtdata %>%
-  unnest_tokens(word, term)
-
-tidytxtdata <- tidytxtdata%>%
+                    
+tidytxtdata <- tidytxtdata%>% #Remove the count column
   select(-count)
-tidytxtdata <- tidytxtdata%>%
+tidytxtdata <- tidytxtdata%>% #Change the column name 'term' to 'word' so that we can get rid of stopwords later
   rename(word = term)
 
 
@@ -53,7 +40,7 @@ tidytxtdata <- tidytxtdata%>%
 
 #Use the btm model
 set.seed(321)
-model  <- BTM(tidytxtdata, k = 10, beta = 0.001, iter = 1000, trace = 100) 
+model  <- BTM(tidytxtdata, k = 10, beta = 0.001, iter = 1000, trace = 100) #Run the model
 
-topicterms <- terms(model, top_n = 10)
+topicterms <- terms(model, top_n = 10) #View the topics
 topicterms
